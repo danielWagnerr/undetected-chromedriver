@@ -15,7 +15,6 @@ import time
 from urllib.request import urlopen
 from urllib.request import urlretrieve
 import zipfile
-from multiprocessing import Lock
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +22,6 @@ IS_POSIX = sys.platform.startswith(("darwin", "cygwin", "linux", "linux2"))
 
 
 class Patcher(object):
-    lock = Lock()
     url_repo = "https://chromedriver.storage.googleapis.com"
     zip_name = "chromedriver_%s.zip"
     exe_name = "chromedriver%s"
@@ -116,12 +114,11 @@ class Patcher(object):
         #     # -1 being a skip value used later in this block
         #
         p = pathlib.Path(self.data_path)
-        with Lock():
-            files = list(p.rglob("*chromedriver*?"))
-            for file in files:
-                if self.is_binary_patched(file):
-                    self.executable_path = str(file)
-                    return True
+        files = list(p.rglob("*chromedriver*?"))
+        for file in files:
+            if self.is_binary_patched(file):
+                self.executable_path = str(file)
+                return True
 
         if executable_path:
             self.executable_path = executable_path
